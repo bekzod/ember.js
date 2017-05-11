@@ -293,25 +293,18 @@ function areInjectionsNotDynamic(injections) {
   return injections._dynamic !== true;
 }
 
-function buildInjections() /* container, ...injections */{
+function buildInjections(container, injections) {
   let hash = {};
 
-  if (arguments.length > 1) {
-    let container = arguments[0];
-    let injections = [];
-    let injection;
-
-    for (let i = 1; i < arguments.length; i++) {
-      if (arguments[i]) {
-        injections = injections.concat(arguments[i]);
-      }
-    }
+  if (injections.length > 0) {
 
     if (DEBUG) {
       container.registry.validateInjections(injections);
     }
 
+    let injection;
     let markAsDynamic = false;
+
     for (let i = 0; i < injections.length; i++) {
       injection = injections[i];
       hash[injection.property] = lookup(container, injection.fullName);
@@ -333,7 +326,8 @@ function injectionsFor(container, fullName) {
   let splitName = fullName.split(':');
   let type = splitName[0];
 
-  let injections = buildInjections(container, registry.getTypeInjections(type), registry.getInjections(fullName));
+  let allInjections = [].concat(registry.getTypeInjections(type), registry.getInjections(fullName));
+  let injections = buildInjections(container, allInjections);
 
   return injections;
 }
