@@ -80,6 +80,29 @@ QUnit.test('initializers are passed an App', function() {
   });
 });
 
+QUnit.test('initializer error is not swallowed', function() {
+  expect(2);
+  let MyApplication = Application.extend();
+
+  MyApplication.initializer({
+    name: 'initializer',
+    initialize(App) {
+      ok(true)
+      throw new Error('initializer boom');
+    }
+  });
+
+  throws(()=>{
+    run(() => {
+      app = MyApplication.create({
+        router: false,
+        rootElement: '#qunit-fixture'
+      });
+    });
+  }, /initializer boom/);
+
+});
+
 QUnit.test('initializers can be registered in a specified order', function() {
   let order = [];
   let MyApplication = Application.extend();

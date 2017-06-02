@@ -580,8 +580,6 @@ const Application = Engine.extend({
   _bootSync() {
     if (this._booted) { return; }
 
-
-
     // Even though this returns synchronously, we still need to make sure the
     // boot promise exists for book-keeping purposes: if anything went wrong in
     // the boot process, we need to store the error as a rejection on the boot
@@ -589,6 +587,7 @@ const Application = Engine.extend({
     let defer = this._bootResolver = new RSVP.defer();
     this._bootPromise = defer.promise;
 
+    let _error;
     try {
       this.runInitializers();
       runLoadHooks('application', this);
@@ -597,9 +596,12 @@ const Application = Engine.extend({
     } catch (error) {
       // For the asynchronous boot path
       defer.reject(error);
-
       // For the synchronous boot path
-      throw error;
+      _error = error;
+    }
+
+    if (_error !== undefined) {
+      throw _error;
     }
   },
 
@@ -699,6 +701,7 @@ const Application = Engine.extend({
     @method didBecomeReady
   */
   didBecomeReady() {
+    let _error;
     try {
       // TODO: Is this still needed for _globalsMode = false?
       if (!isTesting()) {
@@ -741,7 +744,11 @@ const Application = Engine.extend({
       this._bootResolver.reject(error);
 
       // For the synchronous boot path
-      throw error;
+      _error = error;
+    }
+
+    if (_error !== undefined) {
+      throw _error
     }
   },
 
