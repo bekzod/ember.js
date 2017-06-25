@@ -53,22 +53,4 @@ export function markObjectAsDirty(meta, propertyKey) {
   if (propertyKey === 'content' && meta.isProxy()) {
     meta.getTag().contentDidChange();
   }
-
-  if (objectTag || propertyTag) {
-    ensureRunloop();
-  }
-}
-
-let run;
-
-function K() {}
-
-function ensureRunloop() {
-  if (!run) {
-    run = require('ember-metal').run;
-  }
-
-  if (hasViews() && !run.backburner.currentInstance) {
-    run.schedule('actions', K);
-  }
 }
