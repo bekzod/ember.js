@@ -632,32 +632,29 @@ const EmberRouter = EmberObject.extend(Evented, {
     };
   },
 
+  _doUpdateURL(location, lastURL) {
+    location.setURL(lastURL);
+    set(this, 'currentURL', lastURL);
+  },
+
+  _doReplaceURL(location, lastURL) {
+    location.replaceURL(lastURL);
+    set(this, 'currentURL', lastURL);
+  },
+
   _setupRouter(location) {
-    let lastURL;
     let routerMicrolib = this._routerMicrolib;
 
     routerMicrolib.getHandler = this._getHandlerFunction();
     routerMicrolib.getSerializer = this._getSerializerFunction();
 
-    let doUpdateURL = () => {
-      location.setURL(lastURL);
-      set(this, 'currentURL', lastURL);
-    };
-
     routerMicrolib.updateURL = path => {
-      lastURL = path;
-      run.once(doUpdateURL);
+      run.once(this, this._doUpdateURL, location, path);
     };
 
     if (location.replaceURL) {
-      let doReplaceURL = () => {
-        location.replaceURL(lastURL);
-        set(this, 'currentURL', lastURL);
-      };
-
       routerMicrolib.replaceURL = path => {
-        lastURL = path;
-        run.once(doReplaceURL);
+        run.once(this, this._doReplaceURL, location, path);
       };
     }
 
