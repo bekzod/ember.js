@@ -1306,17 +1306,16 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let allParams = queryParams.propertyNames;
       let cache = this._bucketCache;
 
-      allParams.forEach(prop => {
-        let aQp = queryParams.map[prop];
+      if (cache) {
+        allParams.forEach(prop => {
+          let aQp = queryParams.map[prop];
 
-        aQp.values = params;
-        let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
-
-        if (cache) {
+          aQp.values = params;
+          let cacheKey = calculateCacheKey(aQp.route.fullRouteName, aQp.parts, aQp.values);
           let value = cache.lookup(cacheKey, prop, aQp.undecoratedDefaultValue);
           set(controller, prop, value);
-        }
-      });
+        });
+      }
 
       let qpValues = getQueryParamsFor(this, transition.state);
       setProperties(controller, qpValues);
@@ -2120,7 +2119,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
     });
 	```
-	
+
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name
     @since 1.0.0

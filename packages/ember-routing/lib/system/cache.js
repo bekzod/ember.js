@@ -13,13 +13,13 @@ export default EmberObject.extend({
   },
 
   has(bucketKey) {
-    return !!this.cache[bucketKey];
+    return this.cache[bucketKey] !== undefined;
   },
 
   stash(bucketKey, key, value) {
     let bucket = this.cache[bucketKey];
 
-    if (!bucket) {
+    if (bucket === undefined) {
       bucket = this.cache[bucketKey] = Object.create(null);
     }
 
