@@ -742,7 +742,6 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     let itemsKeyIsAtThis = (itemsKey === '@this');
     let items = itemsKeyIsAtThis ? this : get(this, itemsKey);
-    if (!isArray(items)) { return emberA(); }
 
     function sortPropertyDidChange() {
       this.notifyPropertyChange(key);
@@ -757,7 +756,11 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     activeObserversMap.set(this, activeObservers);
 
-    return sortByNormalizedSortProperties(items, normalizedSortProperties);
+    if (isArray(items)) {
+      return sortByNormalizedSortProperties(items, normalizedSortProperties);
+    } else {
+      return emberA();
+    }
   }, { dependentKeys: [`${sortPropertiesKey}.[]`], readOnly: true });
 
   cp._activeObserverMap = undefined;
