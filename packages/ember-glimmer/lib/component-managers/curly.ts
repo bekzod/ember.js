@@ -68,7 +68,7 @@ function aliasIdToElementId(args: Arguments, props: any) {
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
 function applyAttributeBindings(element: Simple.Element, attributeBindings: any, component: Component, operations: ElementOperations) {
-  let seen: string[] = [];
+  let seen: Set = new Set();
   let i = attributeBindings.length - 1;
 
   while (i !== -1) {
@@ -76,19 +76,18 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
     let parsed: [string, string, boolean] = AttributeBinding.parse(binding);
     let attribute = parsed[1];
 
-    if (seen.indexOf(attribute) === -1) {
-      seen.push(attribute);
+    if (!seen.has(attribute)) {
+      seen.add(attribute);
       AttributeBinding.install(element, component, parsed, operations);
     }
-
     i--;
   }
 
-  if (seen.indexOf('id') === -1) {
+  if (!seen.has('id')) {
     operations.addStaticAttribute(element, 'id', component.elementId);
   }
 
-  if (seen.indexOf('style') === -1) {
+  if (!seen.has('style')) {
     IsVisibleBinding.install(element, component, operations);
   }
 }
@@ -96,7 +95,7 @@ function applyAttributeBindings(element: Simple.Element, attributeBindings: any,
 function tagName(vm: VM) {
   let dynamicScope: DynamicScope = vm.dynamicScope() as DynamicScope;
   // tslint:disable-next-line:no-shadowed-variable
-  let { tagName } = dynamicScope.view!;
+  let { tagName } = dynamicScope.view;
   return PrimitiveReference.create(tagName === '' ? null : tagName || 'div');
 }
 
