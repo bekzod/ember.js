@@ -24,7 +24,9 @@ export function watchKey(obj, keyName, _meta) {
     let possibleDesc = obj[keyName];
     let isDescriptor = possibleDesc !== null &&
       typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
-    if (isDescriptor && possibleDesc.willWatch) { possibleDesc.willWatch(obj, keyName, meta); }
+    if (isDescriptor && possibleDesc.willWatch) {
+      possibleDesc.willWatch(obj, keyName, meta);
+    }
 
     if (typeof obj.willWatchProperty === 'function') {
       obj.willWatchProperty(keyName);

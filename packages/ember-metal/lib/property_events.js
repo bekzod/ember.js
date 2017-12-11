@@ -48,17 +48,17 @@ let deferred = 0;
 */
 function propertyWillChange(obj, keyName, _meta) {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
-  if (meta !== undefined && !meta.isInitialized(obj)) { return; }
+  let hasMeta = meta !== undefined;
+  if (hasMeta && !meta.isInitialized(obj)) { return; }
 
-  let watching = meta !== undefined && meta.peekWatching(keyName) > 0;
   let possibleDesc = obj[keyName];
   let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
-  if (isDescriptor && possibleDesc.willChange) {
+  if (isDescriptor && possibleDesc.willChange !== undefined) {
     possibleDesc.willChange(obj, keyName);
   }
 
-  if (watching) {
+  if (hasMeta && meta.peekWatching(keyName) > 0) {
     dependentKeysWillChange(obj, keyName, meta);
     chainsWillChange(obj, keyName, meta);
     notifyBeforeObservers(obj, keyName, meta);
@@ -92,7 +92,7 @@ function propertyDidChange(obj, keyName, _meta) {
   let isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
 
   // shouldn't this mean that we're watching this key?
-  if (isDescriptor && possibleDesc.didChange) {
+  if (isDescriptor && possibleDesc.didChange !== undefined) {
     possibleDesc.didChange(obj, keyName);
   }
 
@@ -102,7 +102,7 @@ function propertyDidChange(obj, keyName, _meta) {
     notifyObservers(obj, keyName, meta);
   }
 
-  if (obj[PROPERTY_DID_CHANGE]) {
+  if (obj[PROPERTY_DID_CHANGE] !== undefined) {
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 
@@ -152,7 +152,6 @@ function dependentKeysDidChange(obj, depKey, meta) {
 }
 
 function iterDeps(method, obj, depKey, seen, meta) {
-  let possibleDesc, isDescriptor;
   let guid = guidFor(obj);
   let current = seen[guid];
 
@@ -166,8 +165,9 @@ function iterDeps(method, obj, depKey, seen, meta) {
 
   current[depKey] = true;
 
-  meta.forEachInDeps(depKey, (key, value) => {
-    if (!value) { return; }
+  let possibleDesc, isDescriptor;
+  meta.forEachInDeps(depKey, (key, depsCount) => {
+    if (depsCount < 1) { return; }
 
     possibleDesc = obj[key];
     isDescriptor = possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
