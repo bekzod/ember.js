@@ -137,8 +137,8 @@ function removeChainWatcher(obj, keyName, node, _meta) {
 class RootChainNode {
   constructor(value) {
     this._value = value;
-    this._chains = {};
-    this._paths = {};
+    this._chains = Object.create(null);
+    this._paths = Object.create(null);
   }
 
   value() {
@@ -175,9 +175,7 @@ class RootChainNode {
   // path
   remove(path) {
     let paths = this._paths;
-    if (paths[path] > 0) {
-      paths[path]--;
-    }
+    if (paths[path] > 0) { paths[path]--; }
 
     let key = firstKey(path);
     let tail = path.slice(key.length + 1);
@@ -190,7 +188,7 @@ class RootChainNode {
     let node = chains[key];
 
     if (node === undefined) {
-      node = chains[key] = new ChainNode(this, key);
+      node = chains[key] = new ChainNode(this, key, undefined);
     }
 
     node.count++; // count chains...
@@ -234,35 +232,37 @@ class RootChainNode {
     }
   }
 
-  populateAffected(keys, affected) {
-    if (keys.length > 1) {
-      affected.push(this.value(), keys.join('.'));
+  populateAffected(path, affected) {
+    if (path.length > 1) {
+      affected.push(this.value(), path.join('.'));
     }
   }
 }
 
-// A ChainNode watches a single key on an object. If you provide a starting
-// value for the key then the node won't actually watch it. For a root node
-// pass null for parent and key and object for value.
 class ChainNode {
-  constructor(parent, key) {
+  constructor(parent, key, value) {
     this._parent = parent;
     this._key    = key;
 
+    let isWatching = this._watching = (value === undefined);
+
     this._chains = undefined;
     this._object = undefined;
-    this._value = undefined;
-    this._paths = undefined;
     this.count = 0;
 
-    let obj = parent.value();
+    this._value = value;
+    this._paths = undefined;
+    if (isWatching) {
+      let obj = parent.value();
 
-    if (isObject(obj)) {
+      if (!isObject(obj)) {
+        return;
+      }
+
       this._object = obj;
-      this._watching = true;
+
       addChainWatcher(this._object, this._key, this);
     }
-    // debugger;
   }
 
   value() {
@@ -358,10 +358,9 @@ class ChainNode {
       }
     }
 
-    if (affected !== undefined) {
+    if (affected) {
       this._parent.populateAffected([this._key], affected);
     }
-    debugger;
   }
 
   populateAffected(keys, affected) {
@@ -378,11 +377,11 @@ class ArrayChainNode {
     this._chains = undefined;
     this.count = 0;
 
-    let obj = parent._parent.value();
-    this._object = obj;
+    let obj = parent.value();
     if (isObject(obj)) {
+      this._object = obj;
       this._watching = true;
-      addChainWatcher(obj, parent._key, this);
+      addChainWatcher(obj, 'length', this);
     } else {
       this._watching = false;
     }
@@ -392,13 +391,15 @@ class ArrayChainNode {
     return this._parent.value();
   }
 
-  chain(key, path) {
+  chain(key = this.__key, path = this.__path) {
+    this.__key = key;
+    this.__path = path;
     let chains = this._chains;
 
-    if (chains === undefined) {
+    // if (chains === undefined) {
       let len = lazyGet(this.value(), 'length');
       chains = this._chains = new Array(len);
-    }
+    // }
 
     for (var i = 0; i < chains.length; i++) {
       let node = chains[i];
@@ -407,24 +408,26 @@ class ArrayChainNode {
         node.chain(key, path);
         chains[i] = node;
       }
-    };
+    }
   }
 
   notify(revalidate, affected) {
     if (revalidate && this._watching) {
-      let parentValue = this._parent._parent.value();
+      let parentValue = this._parent.value();
 
       if (parentValue !== this._object) {
-        removeChainWatcher(obj, parent._key, this);
+        removeChainWatcher(this._object, 'length', this);
 
         if (isObject(parentValue)) {
           this._object = parentValue;
-          addChainWatcher(parentValue, parent._key, this);
+          addChainWatcher(parentValue, 'length', this);
         } else {
           this._object = undefined;
         }
       }
       this._value = undefined;
+    } else {
+      // this.chain();
     }
 
     // then notify chains...
@@ -435,12 +438,13 @@ class ArrayChainNode {
         if (node !== undefined) {
           node.notify(revalidate, affected);
         }
-      };
+      }
     }
 
     if (affected !== undefined) {
       this._parent.populateAffected([this._key], affected);
     }
+    debugger;
   }
 
   populateAffected(keys, affected) {
@@ -451,7 +455,7 @@ class ArrayChainNode {
     this._parent.populateAffected(k, affected);
 
     // sending  [array.1.key] 1 index;
-    this._parent.populateAffected(keys, affected);
+    // this._parent.populateAffected(keys, affected);
   }
 
   unchain(key, path) {
@@ -466,21 +470,19 @@ class ArrayChainNode {
           let nextPath = path.slice(nextKey.length + 1);
           node.unchain(nextKey, nextPath);
 
-          // // delete node if needed.
-          // node.count--;
-          // if (node.count <= 0) {
-          //   chains[node._key] = undefined;
-          //   node.destroy();
-          // }
-
+          node.count--;
+          if (node.count <= 0) {
+            chains[node._key] = undefined;
+            node.destroy();
+          }
         }
       }
-    };
+    }
   }
 
   destroy() {
     if (this._watching) {
-      removeChainWatcher(this._object, parent._key, this);
+      removeChainWatcher(this._object, this._parent._key, this);
       this._watching = false; // so future calls do nothing
     }
   }
@@ -499,7 +501,7 @@ function lazyGet(obj, key) {
     return;
   }
 
-  // Use `get` if the return value is an EachProxy or an uncacheable value.
+  // // Use `get` if the return value is an EachProxy or an uncacheable value.
   if (isVolatile(obj, key, meta)) {
     return get(obj, key);
   // Otherwise attempt to get the cached value of the computed property
