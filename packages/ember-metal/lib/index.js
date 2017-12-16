@@ -76,6 +76,7 @@ export {
 } from './watch_key';
 export {
   ChainNode,
+  RootChainNode,
   finishChains,
   removeChainWatcher
 } from './chains';
