@@ -188,7 +188,12 @@ class RootChainNode {
     let node = chains[key];
 
     if (node === undefined) {
-      node = chains[key] = new ChainNode(this, key, undefined);
+      if (key === '@each') {
+        node = new ArrayChainNode(this);
+      } else {
+        node = new ChainNode(this, key);
+      }
+      chains[key] = node;
     }
 
     node.count++; // count chains...
@@ -426,8 +431,8 @@ class ArrayChainNode {
         }
       }
       this._value = undefined;
-    } else {
       // this.chain();
+    } else {
     }
 
     // then notify chains...
@@ -460,21 +465,14 @@ class ArrayChainNode {
 
   unchain(key, path) {
     let chains = this._chains;
-    let node = chains[key];
-
     for (var i = 0; i < chains.length; i++) {
       let node = chains[i];
       if (node !== undefined) {
-        if (path && path.length > 1) {
-          let nextKey  = firstKey(path);
-          let nextPath = path.slice(nextKey.length + 1);
-          node.unchain(nextKey, nextPath);
-
-          node.count--;
-          if (node.count <= 0) {
-            chains[node._key] = undefined;
-            node.destroy();
-          }
+        node.unchain(key, path);
+        node.count--;
+        if (node.count <= 0) {
+          chains[node._key] = undefined;
+          node.destroy();
         }
       }
     }
