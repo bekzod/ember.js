@@ -337,7 +337,7 @@ function lazyGet(obj, key) {
   }
 }
 
-function finishChains(meta) {
+export function finishChains(meta) {
   // finish any current chains node watchers that reference obj
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
