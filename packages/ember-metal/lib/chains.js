@@ -108,6 +108,10 @@ function makeChainWatcher() {
   return new ChainWatchers();
 }
 
+function makeChainNode(obj) {
+  return new ChainNode(null, null, obj);
+}
+
 function addChainWatcher(obj, keyName, node) {
   let m = metaFor(obj);
   m.writableChainWatchers(makeChainWatcher).add(keyName, node);
@@ -183,7 +187,7 @@ class ChainNode {
 
   // copies a top level object only
   copy(obj) {
-    let ret = new ChainNode(null, null, obj);
+    let ret = makeChainNode(obj);
     let paths = this._paths;
     if (paths !== undefined) {
       let path;
@@ -334,7 +338,7 @@ function lazyGet(obj, key) {
   }
 }
 
-function finishChains(meta) {
+export function finishChains(meta) {
   // finish any current chains node watchers that reference obj
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
@@ -349,6 +353,7 @@ function finishChains(meta) {
 
 export {
   finishChains,
+  makeChainNode,
   removeChainWatcher,
   ChainNode
 };
