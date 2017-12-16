@@ -63,6 +63,7 @@ function propertyWillChange(obj, keyName, _meta) {
     chainsWillChange(obj, keyName, meta);
     notifyBeforeObservers(obj, keyName, meta);
   }
+  debugger;
 }
 
 /**
@@ -100,6 +101,7 @@ function propertyDidChange(obj, keyName, _meta) {
     chainsDidChange(obj, keyName, meta);
     notifyObservers(obj, keyName, meta);
   }
+  debugger;
 
   if (obj[PROPERTY_DID_CHANGE]) {
     obj[PROPERTY_DID_CHANGE](keyName);

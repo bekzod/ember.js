@@ -282,6 +282,7 @@ class ChainNode {
   chain(key, path) {
     let chains = this._chains;
     let node;
+
     if (chains === undefined) {
       chains = this._chains = Object.create(null);
     } else {
@@ -289,7 +290,13 @@ class ChainNode {
     }
 
     if (node === undefined) {
-      node = chains[key] = new ChainNode(this, key);
+      if (key === '@each') {
+        node = new ArrayChainNode(this);
+      } else {
+        node = new ChainNode(this, key);
+      }
+
+      chains[key] = node;
     }
 
     node.count++; // count chains...
@@ -359,6 +366,84 @@ class ChainNode {
     keys.unshift(this._key);
     this._parent.populateAffected(keys, affected);
   }
+}
+
+
+class ArrayChainNode {
+  constructor(parent) {
+    this._parent = parent;
+    this._key = '@each';
+    this._chains = undefined;
+    let array = parent.value()
+
+    // if (isObject(array)) {
+    //   this._object = array;
+    //   this._watching = true;
+    //   addChainWatcher(this._object, 'length', this);
+    // }
+    this._watching = true;
+  }
+
+  value() {
+    return this._parent.value()
+  }
+
+  chain(key, path) {
+    let chains = this._chains;
+
+    if (chains === undefined) {
+      let len = lazyGet(this.value(), 'length');
+      chains = this._chains = new Array(len);
+    }
+
+    for (var i = 0; i < chains.length; i++) {
+      let node = chains[i];
+      if (node === undefined) {
+        node = new ChainNode(this, key);
+        chains[i] = node;
+      }
+      // chain rest of path if there is one
+      if (path) {
+        key = firstKey(path);
+        node.chain(key, path.slice(key.length + 1));
+      }
+    };
+  }
+
+  notify(revalidate, affected) {
+    debugger;
+    // if (revalidate && this._watching) {
+    //   let parentValue = this._parent.value();
+
+    //   if (parentValue !== this._object) {
+    //     removeChainWatcher(this._object, this._key, this);
+
+    //     if (isObject(parentValue)) {
+    //       this._object = parentValue;
+    //       addChainWatcher(parentValue, this._key, this);
+    //     } else {
+    //       this._object = undefined;
+    //     }
+    //   }
+    //   this._value = undefined;
+    // }
+
+    // then notify chains...
+    let chains = this._chains;
+    if (chains !== undefined) {
+      for (var i = 0; i < chains.length; i++) {
+        let node = chains[i];
+        if (node !== undefined) {
+          node.notify(revalidate, affected);
+        }
+      };
+    }
+
+    if (affected !== undefined) {
+      this._parent.populateAffected([this._key], affected);
+    }
+  }
+
 }
 
 function lazyGet(obj, key) {

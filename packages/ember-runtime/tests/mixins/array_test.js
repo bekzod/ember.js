@@ -436,16 +436,16 @@ testBoth('observers that contain @each in the path should fire only once the fir
     init() {
       this._super(...arguments);
       // Observer does not fire on init
-      set(this, 'resources', emberA());
+      set(this, 'resources', emberA([EmberObject.create({ common: 'HI!' })]));
     },
 
     commonDidChange: emberObserver('resources.@each.common', () => count++)
   }).create();
 
   // Observer fires second time when new object is added
-  get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
+  // get(obj, 'resources').pushObject(EmberObject.create({ common: 'HI!' }));
   // Observer fires third time when property on an object is changed
   set(objectAt(get(obj, 'resources'), 0), 'common', 'BYE!');
 
-  equal(count, 2, 'observers should only be called once');
+  equal(count, 1, 'observers should only be called once');
 });
