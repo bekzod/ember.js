@@ -374,18 +374,20 @@ class ArrayChainNode {
     this._parent = parent;
     this._key = '@each';
     this._chains = undefined;
-    let array = parent.value()
+    this.count = 0;
 
-    // if (isObject(array)) {
-    //   this._object = array;
-    //   this._watching = true;
-    //   addChainWatcher(this._object, 'length', this);
-    // }
-    this._watching = true;
+    let obj = parent._parent.value();
+    this._object = obj;
+    if (isObject(obj)) {
+      this._watching = true;
+      addChainWatcher(obj, parent._key, this);
+    } else {
+      this._watching = false;
+    }
   }
 
   value() {
-    return this._parent.value()
+    return this._parent.value();
   }
 
   chain(key, path) {
@@ -408,25 +410,25 @@ class ArrayChainNode {
         node.chain(key, path.slice(key.length + 1));
       }
     };
+
   }
 
   notify(revalidate, affected) {
-    debugger;
-    // if (revalidate && this._watching) {
-    //   let parentValue = this._parent.value();
+    if (revalidate && this._watching) {
+      let parentValue = this._parent._parent.value();
 
-    //   if (parentValue !== this._object) {
-    //     removeChainWatcher(this._object, this._key, this);
+      if (parentValue !== this._object) {
+        removeChainWatcher(obj, parent._key, this);
 
-    //     if (isObject(parentValue)) {
-    //       this._object = parentValue;
-    //       addChainWatcher(parentValue, this._key, this);
-    //     } else {
-    //       this._object = undefined;
-    //     }
-    //   }
-    //   this._value = undefined;
-    // }
+        if (isObject(parentValue)) {
+          this._object = parentValue;
+          addChainWatcher(parentValue, parent._key, this);
+        } else {
+          this._object = undefined;
+        }
+      }
+      this._value = undefined;
+    }
 
     // then notify chains...
     let chains = this._chains;
@@ -442,6 +444,11 @@ class ArrayChainNode {
     if (affected !== undefined) {
       this._parent.populateAffected([this._key], affected);
     }
+  }
+
+  populateAffected(keys, affected) {
+    keys.unshift(this._key);
+    this._parent.populateAffected(keys, affected);
   }
 
 }
