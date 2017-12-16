@@ -958,6 +958,7 @@ const Enumerable = Mixin.create({
 
     if (hasDelta) {
       propertyWillChange(this, 'length');
+      propertyWillChange(this, '@each');
     }
 
     sendEvent(this, '@enumerable:before', [this, removing, adding]);
@@ -1013,6 +1014,7 @@ const Enumerable = Mixin.create({
 
     if (hasDelta) {
       propertyDidChange(this, 'length');
+      propertyDidChange(this, '@each');
     }
 
     propertyDidChange(this, '[]');

@@ -262,6 +262,7 @@ class ChainNode {
       this._watching = true;
       addChainWatcher(this._object, this._key, this);
     }
+    // debugger;
   }
 
   value() {
@@ -360,6 +361,7 @@ class ChainNode {
     if (affected !== undefined) {
       this._parent.populateAffected([this._key], affected);
     }
+    debugger;
   }
 
   populateAffected(keys, affected) {
@@ -401,16 +403,11 @@ class ArrayChainNode {
     for (var i = 0; i < chains.length; i++) {
       let node = chains[i];
       if (node === undefined) {
-        node = new ChainNode(this, key);
+        node = new ChainNode(this, i + '');
+        node.chain(key, path);
         chains[i] = node;
       }
-      // chain rest of path if there is one
-      if (path) {
-        key = firstKey(path);
-        node.chain(key, path.slice(key.length + 1));
-      }
     };
-
   }
 
   notify(revalidate, affected) {
@@ -447,8 +444,45 @@ class ArrayChainNode {
   }
 
   populateAffected(keys, affected) {
-    keys.unshift(this._key);
+    // sending  [array.@each.key]
+    let k = keys.slice(0);
+    k.shift();
+    k.unshift(this._key);
+    this._parent.populateAffected(k, affected);
+
+    // sending  [array.1.key] 1 index;
     this._parent.populateAffected(keys, affected);
+  }
+
+  unchain(key, path) {
+    let chains = this._chains;
+    let node = chains[key];
+
+    for (var i = 0; i < chains.length; i++) {
+      let node = chains[i];
+      if (node !== undefined) {
+        if (path && path.length > 1) {
+          let nextKey  = firstKey(path);
+          let nextPath = path.slice(nextKey.length + 1);
+          node.unchain(nextKey, nextPath);
+
+          // // delete node if needed.
+          // node.count--;
+          // if (node.count <= 0) {
+          //   chains[node._key] = undefined;
+          //   node.destroy();
+          // }
+
+        }
+      }
+    };
+  }
+
+  destroy() {
+    if (this._watching) {
+      removeChainWatcher(this._object, parent._key, this);
+      this._watching = false; // so future calls do nothing
+    }
   }
 
 }
