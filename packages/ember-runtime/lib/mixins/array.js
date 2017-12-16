@@ -607,14 +607,14 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @property @each
     @public
   */
-  '@each': computed(function() {
-    // TODO use Symbol or add to meta
-    if (!this.__each) {
-      this.__each = new EachProxy(this);
-    }
+  // '@each': computed(function() {
+  //   // TODO use Symbol or add to meta
+  //   if (!this.__each) {
+  //     this.__each = new EachProxy(this);
+  //   }
 
-    return this.__each;
-  }).volatile().readOnly()
+  //   return this.__each;
+  // }).volatile().readOnly()
 });
 
 /**

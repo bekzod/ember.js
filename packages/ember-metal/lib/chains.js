@@ -107,7 +107,7 @@ function makeChainWatcher() {
   return new ChainWatchers();
 }
 
-function makeChainNode(obj) {
+function makeRootChainNode(obj) {
   return new RootChainNode(obj);
 }
 
@@ -150,7 +150,7 @@ class RootChainNode {
 
   // copies a top level object only
   copy(obj) {
-    let ret = makeChainNode(obj);
+    let ret = makeRootChainNode(obj);
     let paths = this._paths;
     let path;
     for (path in paths) {
@@ -249,19 +249,11 @@ class ChainNode {
     this._parent = parent;
     this._key    = key;
 
-    // _watching is true when calling get(this._parent, this._key) will
-    // return the value of this node.
-    //
-    // It is false for the root of a chain (because we have no parent)
-    // and for global paths (because the parent node is the object with
-    // the observer on it)
-
     this._chains = undefined;
     this._object = undefined;
-    this.count = 0;
-
     this._value = undefined;
     this._paths = undefined;
+    this.count = 0;
 
     let obj = parent.value();
 
@@ -402,13 +394,13 @@ function finishChains(meta) {
   // ensure that if we have inherited any chains they have been
   // copied onto our own meta.
   if (meta.readableChains() !== undefined) {
-    meta.writableChains(makeChainNode);
+    meta.writableChains(makeRootChainNode);
   }
 }
 
 export {
   finishChains,
-  makeChainNode,
+  makeRootChainNode,
   removeChainWatcher,
   RootChainNode,
   ChainNode
