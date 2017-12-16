@@ -2,6 +2,7 @@ import {
   addObserver,
   get,
   ChainNode,
+  RootChainNode,
   finishChains,
   defineProperty,
   computed,
@@ -88,7 +89,7 @@ QUnit.test('observer and CP chains', function() {
 
 QUnit.test('checks cache correctly', function(assert) {
   let obj = {};
-  let parentChainNode = new ChainNode(null, null, obj);
+  let parentChainNode = new RootChainNode(obj);
   let chainNode = new ChainNode(parentChainNode, 'foo');
 
   defineProperty(obj, 'foo', computed(function() { return undefined; }));

@@ -1,7 +1,6 @@
 import { get } from './property_get';
 import { descriptorFor, meta as metaFor, peekMeta } from './meta';
 import { watchKey, unwatchKey } from './watch_key';
-import { makeChainNode } from './watch_path';
 import { cacheFor } from './computed';
 
 const FIRST_KEY = /^([^\.]+)/;
@@ -109,7 +108,7 @@ function makeChainWatcher() {
 }
 
 function makeChainNode(obj) {
-  return new ChainNode(null, null, obj);
+  return new RootChainNode(obj);
 }
 
 function addChainWatcher(obj, keyName, node) {
@@ -135,11 +134,118 @@ function removeChainWatcher(obj, keyName, node, _meta) {
   unwatchKey(obj, keyName, meta);
 }
 
+class RootChainNode {
+  constructor(value) {
+    this._value = value;
+    this._chains = {};
+    this._paths = {};
+  }
+
+  value() {
+    return this._value;
+  }
+
+  destroy() {
+  }
+
+  // copies a top level object only
+  copy(obj) {
+    let ret = makeChainNode(obj);
+    let paths = this._paths;
+    let path;
+    for (path in paths) {
+      if (paths[path] > 0) { ret.add(path); }
+    }
+    return ret;
+  }
+
+  // called on the root node of a chain to setup watchers on the specified
+  // path.
+  add(path) {
+    let paths = this._paths;
+    paths[path] = (paths[path] || 0) + 1;
+
+    let key = firstKey(path);
+    let tail = path.slice(key.length + 1);
+
+    this.chain(key, tail);
+  }
+
+  // called on the root node of a chain to teardown watcher on the specified
+  // path
+  remove(path) {
+    let paths = this._paths;
+    if (paths[path] > 0) {
+      paths[path]--;
+    }
+
+    let key = firstKey(path);
+    let tail = path.slice(key.length + 1);
+
+    this.unchain(key, tail);
+  }
+
+  chain(key, path) {
+    let chains = this._chains;
+    let node = chains[key];
+
+    if (node === undefined) {
+      node = chains[key] = new ChainNode(this, key);
+    }
+
+    node.count++; // count chains...
+
+    // chain rest of path if there is one
+    if (path) {
+      key = firstKey(path);
+      path = path.slice(key.length + 1);
+      node.chain(key, path);
+    }
+  }
+
+  unchain(key, path) {
+    let chains = this._chains;
+    let node = chains[key];
+
+    // unchain rest of path first...
+    if (path && path.length > 1) {
+      let nextKey  = firstKey(path);
+      let nextPath = path.slice(nextKey.length + 1);
+      node.unchain(nextKey, nextPath);
+    }
+
+    // delete node if needed.
+    node.count--;
+    if (node.count <= 0) {
+      chains[node._key] = undefined;
+      node.destroy();
+    }
+  }
+
+  notify(revalidate, affected) {
+    // then notify chains...
+    let chains = this._chains;
+    let node;
+    for (let key in chains) {
+      node = chains[key];
+      if (node !== undefined) {
+        node.notify(revalidate, affected);
+      }
+    }
+  }
+
+  populateAffected(keys, affected) {
+    if (keys.length > 1) {
+      affected.push(this.value(), keys.join('.'));
+    }
+  }
+}
+
 // A ChainNode watches a single key on an object. If you provide a starting
 // value for the key then the node won't actually watch it. For a root node
 // pass null for parent and key and object for value.
 class ChainNode {
-  constructor(parent, key, value) {
+  constructor(parent, key) {
     this._parent = parent;
     this._key    = key;
 
@@ -149,23 +255,19 @@ class ChainNode {
     // It is false for the root of a chain (because we have no parent)
     // and for global paths (because the parent node is the object with
     // the observer on it)
-    let isWatching = this._watching = (value === undefined);
 
     this._chains = undefined;
     this._object = undefined;
     this.count = 0;
 
-    this._value = value;
+    this._value = undefined;
     this._paths = undefined;
-    if (isWatching) {
-      let obj = parent.value();
 
-      if (!isObject(obj)) {
-        return;
-      }
+    let obj = parent.value();
 
+    if (isObject(obj)) {
       this._object = obj;
-
+      this._watching = true;
       addChainWatcher(this._object, this._key, this);
     }
   }
@@ -185,46 +287,6 @@ class ChainNode {
     }
   }
 
-  // copies a top level object only
-  copy(obj) {
-    let ret = makeChainNode(obj);
-    let paths = this._paths;
-    if (paths !== undefined) {
-      let path;
-      for (path in paths) {
-        if (paths[path] > 0) { ret.add(path); }
-      }
-    }
-    return ret;
-  }
-
-  // called on the root node of a chain to setup watchers on the specified
-  // path.
-  add(path) {
-    let paths = this._paths || (this._paths = {});
-    paths[path] = (paths[path] || 0) + 1;
-
-    let key = firstKey(path);
-    let tail = path.slice(key.length + 1);
-
-    this.chain(key, tail);
-  }
-
-  // called on the root node of a chain to teardown watcher on the specified
-  // path
-  remove(path) {
-    let paths = this._paths;
-    if (paths === undefined) { return; }
-    if (paths[path] > 0) {
-      paths[path]--;
-    }
-
-    let key = firstKey(path);
-    let tail = path.slice(key.length + 1);
-
-    this.unchain(key, tail);
-  }
-
   chain(key, path) {
     let chains = this._chains;
     let node;
@@ -235,7 +297,7 @@ class ChainNode {
     }
 
     if (node === undefined) {
-      node = chains[key] = new ChainNode(this, key, undefined);
+      node = chains[key] = new ChainNode(this, key);
     }
 
     node.count++; // count chains...
@@ -296,21 +358,14 @@ class ChainNode {
       }
     }
 
-    if (affected && this._parent) {
-      this._parent.populateAffected(this._key, 1, affected);
+    if (affected !== undefined) {
+      this._parent.populateAffected([this._key], affected);
     }
   }
 
-  populateAffected(path, depth, affected) {
-    if (this._key) {
-      path = `${this._key}.${path}`;
-    }
-
-    if (this._parent) {
-      this._parent.populateAffected(path, depth + 1, affected);
-    } else if (depth > 1) {
-      affected.push(this.value(), path);
-    }
+  populateAffected(keys, affected) {
+    keys.unshift(this._key);
+    this._parent.populateAffected(keys, affected);
   }
 }
 
@@ -338,7 +393,7 @@ function lazyGet(obj, key) {
   }
 }
 
-export function finishChains(meta) {
+function finishChains(meta) {
   // finish any current chains node watchers that reference obj
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
@@ -355,5 +410,6 @@ export {
   finishChains,
   makeChainNode,
   removeChainWatcher,
+  RootChainNode,
   ChainNode
 };
