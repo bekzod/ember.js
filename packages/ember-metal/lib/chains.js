@@ -319,6 +319,8 @@ class ChainNode {
     let chains = this._chains;
     let node = chains[key];
 
+    if (!node) { return; }
+
     // unchain rest of path first...
     if (path && path.length > 1) {
       let nextKey  = firstKey(path);
@@ -390,6 +392,7 @@ class ArrayChainNode {
     } else {
       this._watching = false;
     }
+    debugger;
   }
 
   value() {
@@ -429,10 +432,9 @@ class ArrayChainNode {
         } else {
           this._object = undefined;
         }
+        this.chain();
       }
       this._value = undefined;
-      // this.chain();
-    } else {
     }
 
     // then notify chains...
@@ -442,9 +444,9 @@ class ArrayChainNode {
         let node = chains[i];
         if (node !== undefined) {
           node.notify(revalidate, affected);
-          if (affected && affected.length > 0) {
-            break;
-          }
+          // if (affected && affected.length > 0) {
+          //   break;
+          // }
         }
       }
     }
@@ -452,6 +454,8 @@ class ArrayChainNode {
     // if (affected !== undefined) {
     //   this._parent.populateAffected([this._key], affected);
     // }
+
+    // debugger;
   }
 
   populateAffected(keys, affected) {

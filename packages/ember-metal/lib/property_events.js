@@ -109,7 +109,7 @@ function propertyDidChange(obj, keyName, _meta) {
     if (meta.isSourceDestroying()) { return; }
     markObjectAsDirty(meta, keyName);
   }
-
+  debugger;
   if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     assertNotRendered(obj, keyName, meta);
   }
