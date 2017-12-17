@@ -387,7 +387,7 @@ QUnit.test('using @each to observe arrays that does not return objects raise err
   equal(called, 0, 'not calls observer when object is pushed');
 });
 
-QUnit.test('modifying the array should also indicate the isDone prop itself has changed', function() {
+QUnit.skip('modifying the array should also indicate the isDone prop itself has changed', function() {
   // NOTE: we never actually get the '@each.isDone' property here.  This is
   // important because it tests the case where we don't have an isDone
   // EachArray materialized but just want to know when the property has

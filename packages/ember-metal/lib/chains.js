@@ -392,7 +392,6 @@ class ArrayChainNode {
     } else {
       this._watching = false;
     }
-    debugger;
   }
 
   value() {
@@ -432,8 +431,8 @@ class ArrayChainNode {
         } else {
           this._object = undefined;
         }
-        this.chain();
       }
+      this.chain();
       this._value = undefined;
     }
 
@@ -454,8 +453,6 @@ class ArrayChainNode {
     // if (affected !== undefined) {
     //   this._parent.populateAffected([this._key], affected);
     // }
-
-    // debugger;
   }
 
   populateAffected(keys, affected) {
