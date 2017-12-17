@@ -36,7 +36,7 @@ QUnit.module('map', {
   setup() {
     obj = EmberObject.extend({
       mapped: map('array.@each.v', (item) => item.v),
-      mappedObjects: map('arrayObjects.@each.v',  (item) => ({ name: item.v.name }))
+      mappedObjects: map('arrayObjects.@each.v', (item) => ({ name: item.v.name }))
     }).create({
       arrayObjects: emberA([
         { v: { name: 'Robert' } },
@@ -399,24 +399,24 @@ QUnit.test('properties can be filtered by truthiness', function() {
   set(obj.get('array')[3], 'b', false);
 
   deepEqual(obj.get('as').mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to property changes');
-  // deepEqual(obj.get('bs').mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to property changes');
+  deepEqual(obj.get('bs').mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to property changes');
 
   obj.get('array').pushObject({ name: 'five', a: 6, b: true });
 
   deepEqual(obj.get('as').mapBy('name'), ['two', 'three', 'four', 'five'], 'arrays computed by filter property respond to added objects');
-  // deepEqual(obj.get('bs').mapBy('name'), ['one', 'three', 'five'], 'arrays computed by filtered property respond to added objects');
+  deepEqual(obj.get('bs').mapBy('name'), ['one', 'three', 'five'], 'arrays computed by filtered property respond to added objects');
 
-  // obj.get('array').popObject();
+  obj.get('array').popObject();
 
-  // deepEqual(obj.get('as').mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to removed objects');
-  // deepEqual(obj.get('bs').mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to removed objects');
+  deepEqual(obj.get('as').mapBy('name'), ['two', 'three', 'four'], 'arrays computed by filter property respond to removed objects');
+  deepEqual(obj.get('bs').mapBy('name'), ['one', 'three'], 'arrays computed by filtered property respond to removed objects');
 
-  // obj.set('array', [
-  //   { name: 'six', a: 12, b: true }
-  // ]);
+  obj.set('array', [
+    { name: 'six', a: 12, b: true }
+  ]);
 
-  // deepEqual(obj.get('as').mapBy('name'), ['six'], 'arrays computed by filter property respond to array changes');
-  // deepEqual(obj.get('bs').mapBy('name'), ['six'], 'arrays computed by filtered property respond to array changes');
+  deepEqual(obj.get('as').mapBy('name'), ['six'], 'arrays computed by filter property respond to array changes');
+  deepEqual(obj.get('bs').mapBy('name'), ['six'], 'arrays computed by filtered property respond to array changes');
 });
 
 QUnit.test('properties can be filtered by values', function() {

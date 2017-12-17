@@ -437,19 +437,21 @@ class ArrayChainNode {
 
     // then notify chains...
     let chains = this._chains;
-    if (chains !== undefined) {
+    if (chains !== undefined && (!affected || affected.length === 0)) {
       for (var i = 0; i < chains.length; i++) {
         let node = chains[i];
         if (node !== undefined) {
           node.notify(revalidate, affected);
+          if (affected && affected.length > 0) {
+            break;
+          }
         }
       }
     }
 
-    if (affected !== undefined) {
-      this._parent.populateAffected([this._key], affected);
-    }
-    debugger;
+    // if (affected !== undefined) {
+    //   this._parent.populateAffected([this._key], affected);
+    // }
   }
 
   populateAffected(keys, affected) {
