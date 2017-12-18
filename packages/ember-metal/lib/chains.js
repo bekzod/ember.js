@@ -383,6 +383,7 @@ class ArrayChainNode {
     this._parent = parent;
     this._chains = undefined;
     this.count = 0;
+    this._length = 0;
     this._watching = false;
 
     let obj = this.value();
@@ -435,6 +436,7 @@ class ArrayChainNode {
       let newLength = lazyGet(this._object, 'length') || 0;
       if (newLength !== this._length) {
         let added = newLength - this._length;
+
         if (added > 0) {
           while(added-- > 0) {
             let node = new ChainNode(this, this._chains.length + '');
@@ -445,14 +447,15 @@ class ArrayChainNode {
           while(added++ < 0) {
             let node = this._chains.pop();
             node.unchain(this.__key, this.__path);
+            node.count = 0;
             node.destroy();
           }
         }
         this._length = newLength;
       }
+      debugger;
     }
 
-    // debugger;
 
     // then notify chains...
     let chains = this._chains;
@@ -469,9 +472,9 @@ class ArrayChainNode {
     }
 
     // debugger;
-    // if (affected !== undefined) {
-    //   this._parent.populateAffected([this._key], affected);
-    // }
+    if (affected !== undefined && affected.length === 0) {
+      this._parent.populateAffected([this._key], affected);
+    }
     // debugger;
   }
 

@@ -63,6 +63,7 @@ function propertyWillChange(obj, keyName, _meta) {
     chainsWillChange(obj, keyName, meta);
     notifyBeforeObservers(obj, keyName, meta);
   }
+  // debugger;
 }
 
 /**
