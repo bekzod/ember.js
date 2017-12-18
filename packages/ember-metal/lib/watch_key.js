@@ -32,10 +32,10 @@ export function watchKey(obj, keyName, _meta) {
       obj.willWatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER) {
-      // NOTE: this is dropped for prod + minified builds
-      handleMandatorySetter(meta, obj, keyName);
-    }
+    // if (MANDATORY_SETTER) {
+    //   // NOTE: this is dropped for prod + minified builds
+    //   handleMandatorySetter(meta, obj, keyName);
+    // }
   }
 }
 
@@ -104,37 +104,37 @@ export function unwatchKey(obj, keyName, _meta) {
       obj.didUnwatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER) {
-      // It is true, the following code looks quite WAT. But have no fear, It
-      // exists purely to improve development ergonomics and is removed from
-      // ember.min.js and ember.prod.js builds.
-      //
-      // Some further context: Once a property is watched by ember, bypassing `set`
-      // for mutation, will bypass observation. This code exists to assert when
-      // that occurs, and attempt to provide more helpful feedback. The alternative
-      // is tricky to debug partially observable properties.
-      if (!isDescriptor && keyName in obj) {
-        let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
+    // if (MANDATORY_SETTER) {
+    //   // It is true, the following code looks quite WAT. But have no fear, It
+    //   // exists purely to improve development ergonomics and is removed from
+    //   // ember.min.js and ember.prod.js builds.
+    //   //
+    //   // Some further context: Once a property is watched by ember, bypassing `set`
+    //   // for mutation, will bypass observation. This code exists to assert when
+    //   // that occurs, and attempt to provide more helpful feedback. The alternative
+    //   // is tricky to debug partially observable properties.
+    //   if (!isDescriptor && keyName in obj) {
+    //     let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
-        if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
-          if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
-            let possibleValue = meta.readInheritedValue('values', keyName);
-            if (possibleValue === UNDEFINED) {
-              delete obj[keyName];
-              return;
-            }
-          }
+    //     if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
+    //       if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
+    //         let possibleValue = meta.readInheritedValue('values', keyName);
+    //         if (possibleValue === UNDEFINED) {
+    //           delete obj[keyName];
+    //           return;
+    //         }
+    //       }
 
-          Object.defineProperty(obj, keyName, {
-            configurable: true,
-            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
-            writable: true,
-            value: meta.peekValues(keyName)
-          });
-          meta.deleteFromValues(keyName);
-        }
-      }
-    }
+    //       Object.defineProperty(obj, keyName, {
+    //         configurable: true,
+    //         enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
+    //         writable: true,
+    //         value: meta.peekValues(keyName)
+    //       });
+    //       meta.deleteFromValues(keyName);
+    //     }
+    //   }
+    // }
   } else if (count > 1) {
     meta.writeWatching(keyName, count - 1);
   }

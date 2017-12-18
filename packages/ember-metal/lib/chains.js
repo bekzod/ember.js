@@ -130,7 +130,6 @@ function removeChainWatcher(obj, keyName, node, _meta) {
   meta = metaFor(obj);
 
   meta.readableChainWatchers().remove(keyName, node);
-
   unwatchKey(obj, keyName, meta);
 }
 
@@ -415,6 +414,7 @@ class ArrayChainNode {
         node = new ChainNode(this, i + '');
         chains[i] = node;
       }
+      node.count++;
       node.chain(key, path);
     }
   }
@@ -436,30 +436,35 @@ class ArrayChainNode {
       let newLength = lazyGet(this._object, 'length') || 0;
       if (newLength !== this._length) {
         let added = newLength - this._length;
+        this._length = newLength;
 
-        if (added > 0) {
-          while(added-- > 0) {
-            let node = new ChainNode(this, this._chains.length + '');
-            node.chain(this.__key, this.__path);
-            this._chains.push(node)
-          }
-        } else {
-          while(added++ < 0) {
-            let node = this._chains.pop();
-            node.unchain(this.__key, this.__path);
-            node.count = 0;
-            node.destroy();
+        if (this._chains !== undefined) {
+          if (added > 0) {
+            while(added-- > 0) {
+              let i = this._chains.length;
+              let node = new ChainNode(this, i + '');
+              node.count++;
+              node.chain(this.__key, this.__path);
+              this._chains.push(node);
+            }
+          } else {
+            while(added++ < 0) {
+              let node = this._chains.pop();
+              node.unchain(this.__key, this.__path);
+              node.count = 0;
+              node.destroy();
+            }
           }
         }
-        this._length = newLength;
+
+        if (affected !== undefined) {
+          this._parent.populateAffected([this._key], affected);
+        }
       }
-      debugger;
     }
 
-
-    // then notify chains...
     let chains = this._chains;
-    if (chains !== undefined && affected.length === 0) {
+    if (chains !== undefined) {
       for (var i = 0; i < chains.length; i++) {
         let node = chains[i];
         if (node !== undefined) {
@@ -471,11 +476,6 @@ class ArrayChainNode {
       }
     }
 
-    // debugger;
-    if (affected !== undefined && affected.length === 0) {
-      this._parent.populateAffected([this._key], affected);
-    }
-    // debugger;
   }
 
   populateAffected(keys, affected) {

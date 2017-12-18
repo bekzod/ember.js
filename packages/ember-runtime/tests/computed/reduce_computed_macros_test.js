@@ -70,9 +70,9 @@ QUnit.test('it maps simple properties', function() {
 
   deepEqual(obj.get('mapped'), [1, 3, 2, 1, 5]);
 
-  // removeAt(obj.get('array'), 3);
+  removeAt(obj.get('array'), 3);
 
-  // deepEqual(obj.get('mapped'), [1, 3, 2, 5]);
+  deepEqual(obj.get('mapped'), [1, 3, 2, 5]);
 });
 
 QUnit.test('it maps simple unshifted properties', function() {
@@ -139,17 +139,17 @@ QUnit.test('it maps objects', function() {
 
   removeAt(obj.get('arrayObjects'), 1);
 
-  // deepEqual(obj.get('mappedObjects'), [
-  //   { name: 'Robert' },
-  //   { name: 'Eddard' }
-  // ]);
+  deepEqual(obj.get('mappedObjects'), [
+    { name: 'Robert' },
+    { name: 'Eddard' }
+  ]);
 
-  // set(obj.get('arrayObjects')[0], 'v', { name: 'Stannis' });
+  set(obj.get('arrayObjects')[0], 'v', { name: 'Stannis' });
 
-  // deepEqual(obj.get('mappedObjects'), [
-  //   { name: 'Stannis' },
-  //   { name: 'Eddard' }
-  // ]);
+  deepEqual(obj.get('mappedObjects'), [
+    { name: 'Stannis' },
+    { name: 'Eddard' }
+  ]);
 });
 
 QUnit.test('it maps unshifted objects with property observers', function() {

@@ -26,9 +26,7 @@ export function Descriptor() {
 //
 
 export function MANDATORY_SETTER_FUNCTION(name) {
-  debugger;
   function SETTER_FUNCTION(value) {
-    debugger;
     let m = peekMeta(this);
     if (!m.isInitialized(this)) {
       m.writeValues(name, value);
