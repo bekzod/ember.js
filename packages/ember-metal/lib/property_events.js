@@ -112,6 +112,7 @@ function propertyDidChange(obj, keyName, _meta) {
   if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
     assertNotRendered(obj, keyName, meta);
   }
+  // debugger;
 }
 
 let WILL_SEEN, DID_SEEN;

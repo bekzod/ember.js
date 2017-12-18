@@ -379,18 +379,19 @@ class ChainNode {
 
 class ArrayChainNode {
   constructor(parent) {
-    this._parent = parent;
     this._key = '@each';
+    this._parent = parent;
     this._chains = undefined;
     this.count = 0;
+    this._watching = false;
 
-    let obj = parent.value();
+    let obj = this.value();
+
     if (isObject(obj)) {
       this._object = obj;
-      this._watching = true;
+      this._length = lazyGet(obj, 'length') || 0;
       addChainWatcher(obj, 'length', this);
-    } else {
-      this._watching = false;
+      this._watching = true;
     }
   }
 
@@ -403,18 +404,17 @@ class ArrayChainNode {
     this.__path = path;
     let chains = this._chains;
 
-    // if (chains === undefined) {
-      let len = lazyGet(this.value(), 'length');
-      chains = this._chains = new Array(len);
-    // }
+    if (chains === undefined) {
+      chains = this._chains = new Array(this._length);
+    }
 
     for (var i = 0; i < chains.length; i++) {
       let node = chains[i];
       if (node === undefined) {
         node = new ChainNode(this, i + '');
-        node.chain(key, path);
         chains[i] = node;
       }
+      node.chain(key, path);
     }
   }
 
@@ -424,7 +424,6 @@ class ArrayChainNode {
 
       if (parentValue !== this._object) {
         removeChainWatcher(this._object, 'length', this);
-
         if (isObject(parentValue)) {
           this._object = parentValue;
           addChainWatcher(parentValue, 'length', this);
@@ -432,27 +431,48 @@ class ArrayChainNode {
           this._object = undefined;
         }
       }
-      this.chain();
-      this._value = undefined;
+
+      let newLength = lazyGet(this._object, 'length') || 0;
+      if (newLength !== this._length) {
+        let added = newLength - this._length;
+        if (added > 0) {
+          while(added-- > 0) {
+            let node = new ChainNode(this, this._chains.length + '');
+            node.chain(this.__key, this.__path);
+            this._chains.push(node)
+          }
+        } else {
+          while(added++ < 0) {
+            let node = this._chains.pop();
+            node.unchain(this.__key, this.__path);
+            node.destroy();
+          }
+        }
+        this._length = newLength;
+      }
     }
+
+    // debugger;
 
     // then notify chains...
     let chains = this._chains;
-    if (chains !== undefined && (!affected || affected.length === 0)) {
+    if (chains !== undefined && affected.length === 0) {
       for (var i = 0; i < chains.length; i++) {
         let node = chains[i];
         if (node !== undefined) {
           node.notify(revalidate, affected);
-          // if (affected && affected.length > 0) {
-          //   break;
-          // }
+          if (affected && affected.length > 0) {
+            break;
+          }
         }
       }
     }
 
+    // debugger;
     // if (affected !== undefined) {
     //   this._parent.populateAffected([this._key], affected);
     // }
+    // debugger;
   }
 
   populateAffected(keys, affected) {
@@ -474,7 +494,7 @@ class ArrayChainNode {
         node.unchain(key, path);
         node.count--;
         if (node.count <= 0) {
-          chains[node._key] = undefined;
+          chains[i] = undefined;
           node.destroy();
         }
       }
