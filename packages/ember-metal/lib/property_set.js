@@ -74,7 +74,7 @@ export function set(obj, keyName, value, tolerant) {
 
   if (isDescriptor(currentValue)) { /* computed property */
     currentValue.set(obj, keyName, value);
-  } else if (currentValue === undefined && 'object' === typeof obj && !(keyName in obj) &&
+  } else if (currentValue === undefined && !(keyName in obj) &&
     typeof obj.setUnknownProperty === 'function') { /* unknown property */
     obj.setUnknownProperty(keyName, value);
   } else if (currentValue === value) { /* no change */

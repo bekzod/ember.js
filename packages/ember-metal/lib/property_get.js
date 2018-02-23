@@ -76,45 +76,39 @@ export function get(obj, keyName) {
   assert(`'this' in paths is not supported`, typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0);
   assert('Cannot call `get` with an empty string', keyName !== '');
 
-  let type = typeof obj;
-
-  let isObject = type === 'object';
-  let isFunction = type === 'function';
-  let isObjectLike = isObject || isFunction;
-
-  let descriptor = undefined;
-  let value;
-
-  if (isObjectLike) {
-    if (EMBER_METAL_ES5_GETTERS) {
-      descriptor = descriptorFor(obj, keyName);
-    }
-
-    if (!EMBER_METAL_ES5_GETTERS || descriptor === undefined) {
-      value = getPossibleMandatoryProxyValue(obj, keyName);
-
-      if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
-        descriptor = value[DESCRIPTOR];
-      } else if (isDescriptor(value)) {
-        descriptor = value;
-      }
-    }
-
-    if (descriptor !== undefined) {
-      return descriptor.get(obj, keyName);
-    }
-  } else {
-    value = obj[keyName];
-  }
-
   if (isPath(keyName)) {
     return _getPath(obj, keyName);
-  } else if (value === undefined && isObject && !(keyName in obj) &&
-    typeof obj.unknownProperty === 'function') {
-    return obj.unknownProperty(keyName);
-  } else {
-    return value;
   }
+
+  let type = typeof obj;
+  if (type !== 'object' && type !== 'function') {
+    return obj[keyName];
+  }
+
+  let descriptor;
+  if (EMBER_METAL_ES5_GETTERS) {
+    descriptor = descriptorFor(obj, keyName);
+  }
+
+  let value;
+  if (!EMBER_METAL_ES5_GETTERS || descriptor === undefined) {
+    value = getPossibleMandatoryProxyValue(obj, keyName);
+
+    if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
+      descriptor = value[DESCRIPTOR];
+    } else if (isDescriptor(value)) {
+      descriptor = value;
+    }
+  }
+
+  if (descriptor !== undefined) {
+    value = descriptor.get(obj, keyName);
+  } else if (value === undefined && !(keyName in obj) &&
+    typeof obj.unknownProperty === 'function') {
+    value = obj.unknownProperty(keyName);
+  }
+
+  return value;
 }
 
 export function _getPath(root, path) {
