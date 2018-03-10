@@ -79,18 +79,19 @@ if (MANDATORY_SETTER) {
 }
 
 export function unwatchKey(obj, keyName, _meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
+  if (typeof obj !== 'object' || obj === null) { return; }
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   // do nothing of this object has already been destroyed
   if (meta === undefined || meta.isSourceDestroyed()) { return; }
 
   let count = meta.peekWatching(keyName);
-  if (count === 1) {
-    meta.writeWatching(keyName, 0);
 
+  if (count > 0) {
+    meta.writeWatching(keyName, count - 1);
+  }
+
+  if (count === 1) {
     let possibleDesc = descriptorFor(obj, keyName, meta);
     let isDescriptor = possibleDesc !== undefined;
 
@@ -133,7 +134,6 @@ export function unwatchKey(obj, keyName, _meta) {
         }
       }
     }
-  } else if (count > 1) {
-    meta.writeWatching(keyName, count - 1);
   }
+
 }
