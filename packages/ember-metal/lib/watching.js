@@ -13,7 +13,8 @@ import {
   isPath
 } from './path_cache';
 import {
-  peekMeta
+  peekMeta,
+  meta as metaFor
 } from './meta';
 
 /**
@@ -29,7 +30,9 @@ import {
   @param {String} keyPath
   @param {Object} meta
 */
-export function watch(obj, keyPath, meta) {
+export function watch(obj, keyPath, _meta) {
+  let meta = _meta === undefined ? metaFor(obj) : _meta;
+
   if (isPath(keyPath)) {
     watchPath(obj, keyPath, meta);
   } else {
@@ -58,7 +61,10 @@ export function watcherCount(obj, key) {
   @param {Object} meta
 */
 
-export function unwatch(obj, keyPath, meta) {
+export function unwatch(obj, keyPath, _meta) {
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
+  if (meta === undefined) { return; }
+
   if (isPath(keyPath)) {
     unwatchPath(obj, keyPath, meta);
   } else {

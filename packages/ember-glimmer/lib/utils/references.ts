@@ -24,6 +24,7 @@ import {
   didRender,
   get,
   isProxy,
+  meta as metaFor,
   set,
   tagFor,
   tagForProperty,
@@ -201,7 +202,7 @@ export class RootPropertyReference extends PropertyReference implements Versione
     }
 
     if (MANDATORY_SETTER) {
-      watchKey(parentValue, propertyKey);
+      watchKey(parentValue, propertyKey, metaFor(parentValue));
     }
   }
 
@@ -259,7 +260,7 @@ export class NestedPropertyReference extends PropertyReference {
 
     if (parentValueType === 'object' && parentValue !== null || parentValueType === 'function') {
       if (MANDATORY_SETTER) {
-        watchKey(parentValue, _propertyKey);
+        watchKey(parentValue, _propertyKey, metaFor(parentValue));
       }
 
       if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {

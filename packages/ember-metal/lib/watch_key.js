@@ -3,8 +3,6 @@ import { MANDATORY_SETTER } from 'ember/features';
 import {
   descriptorFor,
   isDescriptor,
-  meta as metaFor,
-  peekMeta,
   UNDEFINED
 } from './meta';
 import {
@@ -15,10 +13,8 @@ import {
 
 let handleMandatorySetter;
 
-export function watchKey(obj, keyName, _meta) {
+export function watchKey(obj, keyName, meta) {
   if (typeof obj !== 'object' || obj === null) { return; }
-
-  let meta = _meta === undefined ? metaFor(obj) : _meta;
   let count = meta.peekWatching(keyName) || 0;
   meta.writeWatching(keyName, count + 1);
 
@@ -78,11 +74,8 @@ if (MANDATORY_SETTER) {
   };
 }
 
-export function unwatchKey(obj, keyName, _meta) {
-  if (typeof obj !== 'object' || obj === null) {
-    return;
-  }
-  let meta = _meta === undefined ? peekMeta(obj) : _meta;
+export function unwatchKey(obj, keyName, meta) {
+  if (typeof obj !== 'object' || obj === null) { return; }
 
   // do nothing of this object has already been destroyed
   if (meta === undefined || meta.isSourceDestroyed()) { return; }
