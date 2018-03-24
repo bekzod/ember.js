@@ -9,13 +9,9 @@ import {
   watchPath,
   unwatchPath
 } from './watch_path';
-import {
-  isPath
-} from './path_cache';
-import {
-  peekMeta,
-  meta as metaFor
-} from './meta';
+import { isPath } from './path_cache';
+import { peekMeta } from './meta';
+import { assert } from 'ember-debug';
 
 /**
   Starts watching a property on an object. Whenever the property changes,
@@ -30,9 +26,8 @@ import {
   @param {String} keyPath
   @param {Object} meta
 */
-export function watch(obj, keyPath, _meta) {
-  let meta = _meta === undefined ? metaFor(obj) : _meta;
-
+export function watch(obj, keyPath, meta) {
+  assert(`\`watch\` expects \`meta\` as third argument`, meta && meta.source === obj);
   if (isPath(keyPath)) {
     watchPath(obj, keyPath, meta);
   } else {
@@ -61,10 +56,8 @@ export function watcherCount(obj, key) {
   @param {Object} meta
 */
 
-export function unwatch(obj, keyPath, _meta) {
-  let meta = _meta === undefined ? peekMeta(obj) : _meta;
-  if (meta === undefined) { return; }
-
+export function unwatch(obj, keyPath, meta) {
+  assert(`\`unwatch\` expects \`meta\` as third argument`, meta && meta.source === obj);
   if (isPath(keyPath)) {
     unwatchPath(obj, keyPath, meta);
   } else {

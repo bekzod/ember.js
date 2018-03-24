@@ -4,6 +4,7 @@ import {
   defineProperty,
   addListener,
   computed,
+  meta as metaFor,
   set
 } from '../..';
 import {
@@ -36,11 +37,11 @@ moduleFor('unwatch', class extends AbstractTestCase {
     }));
     addListeners(obj, 'foo');
 
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
     set(obj, 'foo', 'bar');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
-    unwatch(obj, 'foo');
+    unwatch(obj, 'foo', metaFor(obj));
     didCount = 0;
     set(obj, 'foo', 'BAZ');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
@@ -50,11 +51,11 @@ moduleFor('unwatch', class extends AbstractTestCase {
     let obj = { foo: 'BIFF' };
     addListeners(obj, 'foo');
 
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
     set(obj, 'foo', 'bar');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
-    unwatch(obj, 'foo');
+    unwatch(obj, 'foo', metaFor(obj));
     didCount = 0;
     set(obj, 'foo', 'BAZ');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
@@ -64,17 +65,17 @@ moduleFor('unwatch', class extends AbstractTestCase {
     let obj = { foo: 'BIFF' };
     addListeners(obj, 'foo');
 
-    watch(obj, 'foo');
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
+    watch(obj, 'foo', metaFor(obj));
     set(obj, 'foo', 'bar');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
-    unwatch(obj, 'foo');
+    unwatch(obj, 'foo', metaFor(obj));
     didCount = 0;
     set(obj, 'foo', 'BAZ');
     assert.equal(didCount, 1, 'should NOT have invoked didCount');
 
-    unwatch(obj, 'foo');
+    unwatch(obj, 'foo', metaFor(obj));
     didCount = 0;
     set(obj, 'foo', 'BAZ');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
@@ -85,12 +86,12 @@ moduleFor('unwatch', class extends AbstractTestCase {
     addListeners(obj, 'length');
 
     // Can watch length when it is undefined
-    watch(obj, 'length');
+    watch(obj, 'length', metaFor(obj));
     set(obj, 'length', '10k');
     assert.equal(didCount, 1, 'should have invoked didCount');
 
     // Should stop watching despite length now being defined (making object 'array-like')
-    unwatch(obj, 'length');
+    unwatch(obj, 'length', metaFor(obj));
     didCount = 0;
     set(obj, 'length', '5k');
     assert.equal(didCount, 0, 'should NOT have invoked didCount');
@@ -100,9 +101,9 @@ moduleFor('unwatch', class extends AbstractTestCase {
     let obj = { get foo() { return 'RUN'; } };
 
     assert.equal(obj.foo, 'RUN', 'obj.foo');
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
     assert.equal(obj.foo, 'RUN', 'obj.foo after watch');
-    unwatch(obj, 'foo');
+    unwatch(obj, 'foo', metaFor(obj));
     assert.equal(obj.foo, 'RUN', 'obj.foo after unwatch');
   }
 });

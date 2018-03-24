@@ -12,13 +12,13 @@ export function watchPath(obj, keyPath, meta) {
 
 export function unwatchPath(obj, keyPath, meta) {
   if (typeof obj !== 'object' || obj === null) { return; }
-  if (m === undefined) { return; }
-  let counter = m.peekWatching(keyPath) || 0;
+  if (meta === undefined) { return; }
 
+  let counter = meta.peekWatching(keyPath) || 0;
   if (counter === 1) {
-    m.writeWatching(keyPath, 0);
-    m.writableChains(makeChainNode).remove(keyPath);
+    meta.writeWatching(keyPath, 0);
+    meta.writableChains(makeChainNode).remove(keyPath);
   } else if (counter > 1) {
-    m.writeWatching(keyPath, counter - 1);
+    meta.writeWatching(keyPath, counter - 1);
   }
 }

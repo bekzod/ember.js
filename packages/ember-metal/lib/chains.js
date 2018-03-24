@@ -107,9 +107,9 @@ function makeChainNode(obj) {
 }
 
 function addChainWatcher(obj, keyName, node) {
-  let m = metaFor(obj);
-  m.writableChainWatchers(makeChainWatcher).add(keyName, node);
-  watchKey(obj, keyName, m);
+  let meta = metaFor(obj);
+  meta.writableChainWatchers(makeChainWatcher).add(keyName, node);
+  watchKey(obj, keyName, meta);
 }
 
 function removeChainWatcher(obj, keyName, node, _meta) {

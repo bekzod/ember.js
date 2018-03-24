@@ -7,7 +7,7 @@ import {
   computed,
   notifyPropertyChange,
   peekMeta,
-  meta,
+  meta as metaFor,
   watch,
   unwatch,
   watcherCount
@@ -23,8 +23,8 @@ moduleFor('Chains', class extends AbstractTestCase {
 
     let childObj = Object.create(obj);
 
-    let parentMeta = meta(obj);
-    let childMeta = meta(childObj);
+    let parentMeta = metaFor(obj);
+    let childMeta = metaFor(childObj);
 
     finishChains(childMeta);
 
@@ -103,7 +103,7 @@ moduleFor('Chains', class extends AbstractTestCase {
   ['@test chains are watched correctly'](assert) {
     let obj = { foo: { bar: { baz: 1 } } };
 
-    watch(obj, 'foo.bar.baz');
+    watch(obj, 'foo.bar.baz', metaFor(obj));
 
     assert.equal(watcherCount(obj, 'foo'), 1);
     assert.equal(watcherCount(obj, 'foo.bar'), 0);
@@ -112,7 +112,7 @@ moduleFor('Chains', class extends AbstractTestCase {
     assert.equal(watcherCount(obj.foo, 'bar.baz'), 0);
     assert.equal(watcherCount(obj.foo.bar, 'baz'), 1);
 
-    unwatch(obj, 'foo.bar.baz');
+    unwatch(obj, 'foo.bar.baz', metaFor(obj));
 
     assert.equal(watcherCount(obj, 'foo'), 0);
     assert.equal(watcherCount(obj, 'foo.bar'), 0);
@@ -125,7 +125,7 @@ moduleFor('Chains', class extends AbstractTestCase {
   ['@test chains with single character keys are watched correctly'](assert) {
     let obj = { a: { b: { c: 1 } } };
 
-    watch(obj, 'a.b.c');
+    watch(obj, 'a.b.c', metaFor(obj));
 
     assert.equal(watcherCount(obj, 'a'), 1);
     assert.equal(watcherCount(obj, 'a.b'), 0);
@@ -134,7 +134,7 @@ moduleFor('Chains', class extends AbstractTestCase {
     assert.equal(watcherCount(obj.a, 'b.c'), 0);
     assert.equal(watcherCount(obj.a.b, 'c'), 1);
 
-    unwatch(obj, 'a.b.c');
+    unwatch(obj, 'a.b.c', metaFor(obj));
 
     assert.equal(watcherCount(obj, 'a'), 0);
     assert.equal(watcherCount(obj, 'a.b'), 0);

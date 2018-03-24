@@ -46,12 +46,12 @@ if (MANDATORY_SETTER) {
       Object.defineProperty(obj, 'e', { value: undefined, configurable: false });
       Object.defineProperty(obj, 'f', { value: undefined, configurable: true });
 
-      watch(obj, 'a');
-      watch(obj, 'b');
-      watch(obj, 'c');
-      watch(obj, 'd');
-      watch(obj, 'e');
-      watch(obj, 'f');
+      watch(obj, 'a', metaFor(obj));
+      watch(obj, 'b', metaFor(obj));
+      watch(obj, 'c', metaFor(obj));
+      watch(obj, 'd', metaFor(obj));
+      watch(obj, 'e', metaFor(obj));
+      watch(obj, 'f', metaFor(obj));
 
       assert.ok(!hasMandatorySetter(obj, 'a'), 'mandatory-setter should not be installed');
       assert.ok(!hasMandatorySetter(obj, 'b'), 'mandatory-setter should not be installed');
@@ -66,8 +66,8 @@ if (MANDATORY_SETTER) {
 
       let obj = { get a() { return 'hi'; } };
 
-      watch(obj, 'a');
-      unwatch(obj, 'a');
+      watch(obj, 'a', metaFor(obj));
+      unwatch(obj, 'a', metaFor(obj));
 
       assert.equal(obj.a, 'hi');
     }
@@ -77,7 +77,7 @@ if (MANDATORY_SETTER) {
 
       let obj = { get a() { return 'hi'; } };
 
-      watch(obj, 'a');
+      watch(obj, 'a', metaFor(obj));
       assert.equal(get(obj, 'a'), 'hi');
       assert.equal(obj.a, 'hi');
     }
@@ -97,7 +97,7 @@ if (MANDATORY_SETTER) {
         }
       });
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
       obj.someProp = 'foo-bar';
@@ -112,7 +112,7 @@ if (MANDATORY_SETTER) {
         }
       };
 
-      watch(obj, 'foo');
+      watch(obj, 'foo', metaFor(obj));
 
       set(obj, 'foo', 2);
       assert.equal(value, 2);
@@ -135,7 +135,7 @@ if (MANDATORY_SETTER) {
 
       let obj = new Foo();
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
       obj.someProp = 'foo-bar';
@@ -162,7 +162,7 @@ if (MANDATORY_SETTER) {
 
       let obj = new Bar();
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
       obj.someProp = 'foo-bar';
@@ -193,7 +193,7 @@ if (MANDATORY_SETTER) {
 
       let obj = new Qux();
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       assert.ok(!hasMandatorySetter(obj, 'someProp'), 'mandatory-setter should not be installed');
 
       obj.someProp = 'foo-bar';
@@ -207,7 +207,7 @@ if (MANDATORY_SETTER) {
         }
       };
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
 
       expectAssertion(function() {
         obj.someProp = 'foo-bar';
@@ -222,7 +222,7 @@ if (MANDATORY_SETTER) {
         }
       };
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       set(obj, 'someProp', 'foo-bar');
 
       assert.equal(get(obj, 'someProp'), 'foo-bar');
@@ -242,7 +242,7 @@ if (MANDATORY_SETTER) {
         value: 'blastix'
       });
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       assert.ok(!(hasMandatorySetter(obj, 'someProp')), 'blastix');
     }
 
@@ -260,7 +260,7 @@ if (MANDATORY_SETTER) {
         value: 'blastix'
       });
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       assert.equal(hasMandatorySetter(obj, 'someProp'), true, 'should have a mandatory setter');
 
       let descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
@@ -273,7 +273,7 @@ if (MANDATORY_SETTER) {
 
       assert.ok(hasMetaValue(obj, 'someProp'), 'someProp is stored in meta.values');
 
-      unwatch(obj, 'someProp');
+      unwatch(obj, 'someProp', metaFor(obj));
 
       assert.ok(!hasMetaValue(obj, 'someProp'), 'someProp is no longer stored in meta.values');
 
@@ -312,7 +312,7 @@ if (MANDATORY_SETTER) {
         value: 'blastix'
       });
 
-      watch(obj, 'someProp');
+      watch(obj, 'someProp', metaFor(obj));
       assert.equal(hasMandatorySetter(obj, 'someProp'), true, 'should have a mandatory setter');
 
       let descriptor = Object.getOwnPropertyDescriptor(obj, 'someProp');
@@ -325,7 +325,7 @@ if (MANDATORY_SETTER) {
 
       assert.ok(hasMetaValue(obj, 'someProp'), 'someProp is stored in meta.values');
 
-      unwatch(obj, 'someProp');
+      unwatch(obj, 'someProp', metaFor(obj));
 
       assert.ok(!hasMetaValue(obj, 'someProp'), 'someProp is no longer stored in meta.values');
 
@@ -361,7 +361,7 @@ if (MANDATORY_SETTER) {
 
       let obj2 = Object.create(obj);
 
-      watch(obj2, 'someProp');
+      watch(obj2, 'someProp', metaFor(obj2));
 
       assert.ok(hasMandatorySetter(obj2, 'someProp'), 'mandatory setter has been setup');
 
@@ -378,7 +378,7 @@ if (MANDATORY_SETTER) {
 
       assert.equal(child.food, 'chips');
 
-      watch(child, 'food');
+      watch(child, 'food', metaFor(child));
 
       assert.equal(child.food, 'chips');
 
@@ -386,7 +386,7 @@ if (MANDATORY_SETTER) {
 
       assert.equal(child.food, 'icecreame');
 
-      unwatch(child, 'food');
+      unwatch(child, 'food', metaFor(child));
 
       assert.equal(child.food, 'icecreame');
 
@@ -410,7 +410,7 @@ if (MANDATORY_SETTER) {
 
       assert.equal(child.food, 'chips');
 
-      watch(child, 'food');
+      watch(child, 'food', metaFor(child));
 
       assert.equal(child.food, 'chips');
 
@@ -418,7 +418,7 @@ if (MANDATORY_SETTER) {
 
       assert.equal(child.food, 'icecreame');
 
-      unwatch(child, 'food');
+      unwatch(child, 'food', metaFor(child));
 
       assert.equal(child.food, 'icecreame');
 

@@ -6,6 +6,9 @@ import {
   addListener,
   removeListener
 } from './events';
+import {
+  meta as metaFor
+} from './meta';
 /**
 @module @ember/object
 */
@@ -28,7 +31,7 @@ export function changeEvent(keyName) {
 */
 export function addObserver(obj, path, target, method) {
   addListener(obj, changeEvent(path), target, method);
-  watch(obj, path);
+  watch(obj, path, metaFor(obj));
 }
 
 /**
@@ -42,6 +45,6 @@ export function addObserver(obj, path, target, method) {
   @public
 */
 export function removeObserver(obj, path, target, method) {
-  unwatch(obj, path);
+  unwatch(obj, path, metaFor(obj));
   removeListener(obj, changeEvent(path), target, method);
 }

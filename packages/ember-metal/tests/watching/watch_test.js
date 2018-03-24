@@ -6,6 +6,7 @@ import {
   computed,
   defineProperty,
   addListener,
+  meta as metaFor,
   watch,
   unwatch,
   deleteMeta
@@ -52,7 +53,7 @@ moduleFor('watch', class extends AbstractTestCase {
     }));
     addListeners(obj, 'foo');
 
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
     set(obj, 'foo', 'bar');
     assert.equal(didCount, 1, 'should have invoked didCount');
   }
@@ -61,7 +62,7 @@ moduleFor('watch', class extends AbstractTestCase {
     let obj = { foo: 'baz' };
     addListeners(obj, 'foo');
 
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
     assert.equal(get(obj, 'foo'), 'baz', 'should have original prop');
 
     set(obj, 'foo', 'bar');
@@ -75,7 +76,7 @@ moduleFor('watch', class extends AbstractTestCase {
     let obj = { };
     addListeners(obj, 'foo');
 
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
 
     assert.equal('foo' in obj, false, 'precond undefined');
 
@@ -92,7 +93,7 @@ moduleFor('watch', class extends AbstractTestCase {
     let objB = Object.create(obj);
 
     addListeners(obj, 'foo');
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
     assert.equal(get(obj, 'foo'), 'baz', 'should have original prop');
 
     set(obj, 'foo', 'bar');
@@ -104,7 +105,7 @@ moduleFor('watch', class extends AbstractTestCase {
     let obj = {};
     addListeners(obj, 'foo');
 
-    watch(obj, 'foo');
+    watch(obj, 'foo', metaFor(obj));
 
     defineProperty(obj, 'foo');
     set(obj, 'foo', 'bar');
@@ -119,7 +120,7 @@ moduleFor('watch', class extends AbstractTestCase {
     addListeners(obj, 'foo.bar');
     addListeners(foo, 'bar');
 
-    watch(obj, 'foo.bar');
+    watch(obj, 'foo.bar', metaFor(obj));
 
     defineProperty(obj, 'foo', undefined, foo);
     set(foo, 'bar', 'baz');
@@ -135,7 +136,7 @@ moduleFor('watch', class extends AbstractTestCase {
     addListeners(obj, 'foo.bar.baz');
     addListeners(baz, 'baz');
 
-    watch(obj, 'foo.bar.baz');
+    watch(obj, 'foo.bar.baz', metaFor(obj));
 
     defineProperty(bar, 'bar', undefined, baz);
     set(baz, 'baz', 'BOO');
@@ -148,12 +149,12 @@ moduleFor('watch', class extends AbstractTestCase {
     let obj = { foo: { bar: { baz: { biff: 'BIFF' } } } };
     addListeners(obj, 'foo.bar.baz.biff');
 
-    watch(obj, 'foo.bar.baz.biff');
+    watch(obj, 'foo.bar.baz.biff', metaFor(obj));
 
     let foo = get(obj, 'foo');
     assert.equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
 
-    unwatch(obj, 'foo.bar.baz.biff');
+    unwatch(obj, 'foo.bar.baz.biff', metaFor(obj));
     assert.equal(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
   }
 
@@ -163,7 +164,7 @@ moduleFor('watch', class extends AbstractTestCase {
     objA.b = objB;
     addListeners(objA, 'b.foo');
 
-    watch(objA, 'b.foo');
+    watch(objA, 'b.foo', metaFor(objA));
 
     let meta_objB = meta(objB);
     let chainNode = meta(objA).readableChains()._chains.b._chains.foo;
@@ -183,7 +184,7 @@ moduleFor('watch', class extends AbstractTestCase {
     let obj = { length: '26.2 miles' };
     addListeners(obj, 'length');
 
-    watch(obj, 'length');
+    watch(obj, 'length', metaFor(obj));
     assert.equal(get(obj, 'length'), '26.2 miles', 'should have original prop');
 
     set(obj, 'length', '10k');
@@ -197,7 +198,7 @@ moduleFor('watch', class extends AbstractTestCase {
     let arr = [];
     addListeners(arr, 'length');
 
-    watch(arr, 'length');
+    watch(arr, 'length', metaFor(arr));
     assert.equal(get(arr, 'length'), 0, 'should have original prop');
 
     set(arr, 'length', '10');
@@ -219,7 +220,7 @@ moduleFor('watch', class extends AbstractTestCase {
     assert.equal(child.b, 1, 'child.b should be 1');
     assert.equal(get(child, 'b'), 1, 'get(child, "b") should be 1');
 
-    watch(child, 'b');
+    watch(child, 'b', metaFor(child));
 
     assert.equal(parent.b,  1, 'parent.b should be 1 (after watch)');
     assert.equal(child.b, 1, 'child.b should be 1  (after watch)');
@@ -233,7 +234,7 @@ moduleFor('watch', class extends AbstractTestCase {
     assert.equal(child.b, undefined, 'child.b ');
     assert.equal(get(child, 'b'), undefined, 'get(child, "b")');
 
-    watch(child, 'b');
+    watch(child, 'b', metaFor(child));
     set(child, 'b', 1);
 
     assert.equal(child.b, 1, 'child.b (after watch)');
