@@ -99,7 +99,7 @@ class ArrayIterator extends BoundedIterator {
 
 class EmberArrayIterator extends BoundedIterator {
   static from(array: Opaque, keyFor: KeyFor): OpaqueIterator {
-    let length = get(array, 'length');
+    let { length } = array;
 
     if (length === 0) {
       return EMPTY_ITERATOR;
