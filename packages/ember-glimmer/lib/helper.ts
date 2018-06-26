@@ -81,11 +81,11 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
   @public
   @since 1.13.0
 */
-let Helper = FrameworkObject.extend({
+class Helper extends FrameworkObject {
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
     this[RECOMPUTE_TAG] = DirtyableTag.create();
-  },
+  }
 
   /**
     On a class-based helper, it may be useful to force a recomputation of that
@@ -116,7 +116,7 @@ let Helper = FrameworkObject.extend({
   */
   recompute() {
     this[RECOMPUTE_TAG].inner.dirty();
-  },
+  }
 
   /**
     Override this function when writing a class-based helper.
