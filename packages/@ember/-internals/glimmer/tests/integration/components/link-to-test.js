@@ -48,6 +48,47 @@ moduleFor(
       });
     }
 
+    ['@test loadingClass applied correctly']() {
+      let controller;
+
+      this.addTemplate('application', `{{link-to 'foo' routeName loadingClass=loadingClass}}`);
+      this.add(
+        'controller:application',
+        Controller.extend({
+          init() {
+            this._super(...arguments);
+            controller = this;
+          },
+          loadingClass: 'my-loading-style',
+          routeName: null,
+        })
+      );
+
+      return this.visit('/').then(() => {
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'a',
+          attrs: { href: '#', class: classMatcher('my-loading-style ember-view') },
+        });
+
+        this.runTask(() => set(controller, 'routeName', 'index'));
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'a',
+          attrs: { href: '/', class: classMatcher('ember-view active') },
+        });
+
+        this.runTask(() => {
+          set(controller, 'routeName', null);
+          set(controller, 'loadingClass', null);
+        });
+
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'a',
+          attrs: { href: '#', class: classMatcher('ember-view') },
+        });
+      });
+    }
+
     ['@test re-computes active class when params change'](assert) {
       let controller;
 

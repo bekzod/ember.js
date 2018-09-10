@@ -527,7 +527,7 @@ const LinkComponent = EmberComponent.extend({
   }),
 
   _isActive(routerState: any) {
-    if (get(this, 'loading')) {
+    if (get(this, 'isLoading')) {
       return false;
     }
 
@@ -655,7 +655,7 @@ const LinkComponent = EmberComponent.extend({
       return false;
     }
 
-    if (get(this, 'loading')) {
+    if (get(this, 'isLoading')) {
       // tslint:disable-next-line:max-line-length
       warn(
         'This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.',
@@ -767,7 +767,7 @@ const LinkComponent = EmberComponent.extend({
     let qualifiedRouteName = get(this, 'qualifiedRouteName');
     let models = get(this, 'models');
 
-    if (get(this, 'loading')) {
+    if (get(this, 'isLoading')) {
       return get(this, 'loadingHref');
     }
 
@@ -802,20 +802,21 @@ const LinkComponent = EmberComponent.extend({
     return routing.generateURL(qualifiedRouteName, models, queryParams);
   }),
 
-  loading: computed(
-    '_modelsAreLoaded',
+  loading: computed('isLoading', function(this: any) {
+    return this.isLoading ? this.loadingClass : undefined;
+  }),
+
+  isLoading: computed(
+    'areModelsLoaded',
     'qualifiedRouteName',
     function computeLinkToComponentLoading(this: any) {
+      let modelsAreLoaded = get(this, 'areModelsLoaded');
       let qualifiedRouteName = get(this, 'qualifiedRouteName');
-      let modelsAreLoaded = get(this, '_modelsAreLoaded');
-
-      if (!modelsAreLoaded || qualifiedRouteName === null || qualifiedRouteName === undefined) {
-        return get(this, 'loadingClass');
-      }
+      return !modelsAreLoaded || qualifiedRouteName === null || qualifiedRouteName === undefined
     }
   ),
 
-  _modelsAreLoaded: computed('models', function computeLinkToComponentModelsAreLoaded(this: any) {
+  areModelsLoaded: computed('models', function computeLinkToComponentModelsAreLoaded(this: any) {
     let models = get(this, 'models');
     for (let i = 0; i < models.length; i++) {
       let model = models[i];
