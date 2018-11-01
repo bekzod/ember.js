@@ -211,26 +211,7 @@ let wrapInAssertion: (
   builder: Builders
 ) => AST.Expression;
 
-if (DEBUG) {
-  wrapInAssertion = (moduleName, node, b) => {
-    let error = b.string(
-      `expected \`${
-        node.original
-      }\` to be a contextual component but found a string. Did you mean \`(component ${
-        node.original
-      })\`? ${calculateLocationDisplay(moduleName, node.loc)}`
-    );
-
-    return b.sexpr(
-      b.path('-assert-implicit-component-helper-argument'),
-      [node, error],
-      b.hash(),
-      node.loc
-    );
-  };
-} else {
-  wrapInAssertion = (_, node) => node;
-}
+ wrapInAssertion = (_, node) => node;
 
 function wrapInComponent(
   moduleName: string,
