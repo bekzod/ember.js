@@ -6,7 +6,6 @@ import { HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';
 
@@ -32,6 +31,10 @@ interface MaybeHasUnknownProperty {
 
 interface MaybeHasIsDestroyed {
   isDestroyed?: boolean;
+}
+
+function isPath(path: any): boolean {
+  return typeof path === 'string' && path.indexOf('.') !== -1;
 }
 
 // ..........................................................

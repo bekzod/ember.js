@@ -3,7 +3,6 @@ import { HAS_NATIVE_PROXY, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { isPath } from './path_cache';
 import { MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
@@ -20,6 +19,10 @@ let setWithMandatorySetter: <T extends object, K extends Extract<keyof T, string
   value: T[K]
 ) => void;
 let makeEnumerable: (obj: object, keyName: string) => void;
+
+function isPath(path: any): boolean {
+  return typeof path === 'string' && path.indexOf('.') !== -1;
+}
 
 /**
  @module @ember/object
@@ -51,6 +54,11 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
   );
+
+  if (isPath(keyName)) {
+    return setPath(obj, keyName, value, tolerant);
+  }
+
   assert(
     `Cannot call set with '${keyName}' on an undefined object.`,
     (obj && typeof obj === 'object') || typeof obj === 'function'
@@ -70,10 +78,6 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
       tolerant
     );
     return;
-  }
-
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
   }
 
   let meta = peekMeta(obj);
