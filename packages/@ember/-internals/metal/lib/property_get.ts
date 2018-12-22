@@ -76,6 +76,10 @@ function isPath(path: any): boolean {
   @public
 */
 export function get(obj: object, keyName: string): any {
+  return isPath(keyName) ? _getPath(obj, keyName) : getKey(obj, keyName);
+}
+
+function getKey(obj: object, keyName: string): any {
   assert(
     `Get must be called with two arguments; an object and a property key`,
     arguments.length === 2
@@ -117,22 +121,18 @@ export function get(obj: object, keyName: string): any {
     } else {
       value = obj[keyName];
     }
-  } else {
-    value = obj[keyName];
-  }
 
-  if (value === undefined) {
-    if (isPath(keyName)) {
-      return _getPath(obj, keyName);
-    }
     if (
-      isObject &&
+      value === undefined &&
       !(keyName in obj) &&
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
     ) {
       return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
     }
+  } else {
+    value = obj[keyName];
   }
+
   return value;
 }
 
@@ -145,7 +145,7 @@ export function _getPath<T extends object>(root: T, path: string): any {
       return undefined;
     }
 
-    obj = get(obj, parts[i]);
+    obj = getKey(obj, parts[i]);
   }
 
   return obj;

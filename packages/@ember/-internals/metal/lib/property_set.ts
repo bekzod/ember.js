@@ -50,15 +50,16 @@ function isPath(path: any): boolean {
   @public
 */
 export function set(obj: object, keyName: string, value: any, tolerant?: boolean): any {
+  return isPath(keyName)
+    ? setPath(obj, keyName, value, tolerant)
+    : setKey(obj, keyName, value, tolerant);
+}
+
+function setKey(obj: object, keyName: string, value: any, tolerant?: boolean): any {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
   );
-
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
-  }
-
   assert(
     `Cannot call set with '${keyName}' on an undefined object.`,
     (obj && typeof obj === 'object') || typeof obj === 'function'
@@ -148,7 +149,7 @@ function setPath(root: object, path: string, value: any, tolerant?: boolean): an
   let newRoot = getPath(root, newPath);
 
   if (newRoot !== null && newRoot !== undefined) {
-    return set(newRoot, keyName, value);
+    return setKey(newRoot, keyName, value, tolerant);
   } else if (!tolerant) {
     throw new EmberError(`Property set failed: object in path "${newPath}" could not be found.`);
   }
